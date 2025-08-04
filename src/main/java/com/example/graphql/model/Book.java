@@ -1,27 +1,41 @@
 package com.example.graphql.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "books")
 public class Book {
-    private String id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(name = "title", nullable = false)
     private String title;
+    
+    @Column(name = "isbn")
     private String isbn;
+    
+    @Column(name = "page_count")
     private int pageCount;
-    private String authorId;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private Author author;
 
     public Book() {}
 
-    public Book(String id, String title, String isbn, int pageCount, String authorId) {
-        this.id = id;
+    public Book(String title, String isbn, int pageCount, Author author) {
         this.title = title;
         this.isbn = isbn;
         this.pageCount = pageCount;
-        this.authorId = authorId;
+        this.author = author;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -49,11 +63,11 @@ public class Book {
         this.pageCount = pageCount;
     }
 
-    public String getAuthorId() {
-        return authorId;
+    public Author getAuthor() {
+        return author;
     }
 
-    public void setAuthorId(String authorId) {
-        this.authorId = authorId;
+    public void setAuthor(Author author) {
+        this.author = author;
     }
 }

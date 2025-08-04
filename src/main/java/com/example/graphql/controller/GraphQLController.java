@@ -27,7 +27,7 @@ public class GraphQLController {
     }
     
     @QueryMapping
-    public Book bookById(@Argument String id) {
+    public Book bookById(@Argument Long id) {
         return bookService.getBookById(id);
     }
     
@@ -37,12 +37,12 @@ public class GraphQLController {
     }
     
     @QueryMapping
-    public Author authorById(@Argument String id) {
+    public Author authorById(@Argument Long id) {
         return bookService.getAuthorById(id);
     }
     
     @QueryMapping
-    public List<Book> booksByAuthor(@Argument String authorId) {
+    public List<Book> booksByAuthor(@Argument Long authorId) {
         return bookService.getBooksByAuthor(authorId);
     }
     
@@ -53,7 +53,7 @@ public class GraphQLController {
         String title = (String) input.get("title");
         String isbn = (String) input.get("isbn");
         Integer pageCount = (Integer) input.get("pageCount");
-        String authorId = (String) input.get("authorId");
+        Long authorId = (Long) input.get("authorId");
         
         return bookService.createBook(title, isbn, pageCount, authorId);
     }
@@ -68,17 +68,17 @@ public class GraphQLController {
     }
     
     @MutationMapping
-    public Book updateBook(@Argument String id, @Argument Map<String, Object> input) {
+    public Book updateBook(@Argument Long id, @Argument Map<String, Object> input) {
         String title = (String) input.get("title");
         String isbn = (String) input.get("isbn");
         Integer pageCount = (Integer) input.get("pageCount");
-        String authorId = (String) input.get("authorId");
+        Long authorId = (Long) input.get("authorId");
         
         return bookService.updateBook(id, title, isbn, pageCount, authorId);
     }
     
     @MutationMapping
-    public Boolean deleteBook(@Argument String id) {
+    public Boolean deleteBook(@Argument Long id) {
         return bookService.deleteBook(id);
     }
     
@@ -86,7 +86,7 @@ public class GraphQLController {
     
     @SchemaMapping
     public Author author(Book book) {
-        return bookService.getAuthorById(book.getAuthorId());
+        return book.getAuthor();
     }
     
     @SchemaMapping
