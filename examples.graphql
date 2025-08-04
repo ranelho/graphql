@@ -1,0 +1,179 @@
+# ===== QUERIES =====
+
+# Buscar todos os livros com informações do autor
+query AllBooks {
+  allBooks {
+    id
+    title
+    isbn
+    pageCount
+    author {
+      id
+      fullName
+      email
+    }
+  }
+}
+
+# Buscar livro específico por ID
+query BookById {
+  bookById(id: "1") {
+    id
+    title
+    isbn
+    pageCount
+    author {
+      fullName
+      email
+    }
+  }
+}
+
+# Buscar todos os autores com seus livros
+query AllAuthors {
+  allAuthors {
+    id
+    firstName
+    lastName
+    fullName
+    email
+    books {
+      id
+      title
+      pageCount
+    }
+  }
+}
+
+# Buscar autor específico por ID
+query AuthorById {
+  authorById(id: "1") {
+    id
+    fullName
+    email
+    books {
+      id
+      title
+      isbn
+    }
+  }
+}
+
+# Buscar livros de um autor específico
+query BooksByAuthor {
+  booksByAuthor(authorId: "1") {
+    id
+    title
+    pageCount
+    author {
+      fullName
+    }
+  }
+}
+
+# ===== MUTATIONS =====
+
+# Criar um novo autor
+mutation CreateAuthor {
+  createAuthor(input: {
+    firstName: "Kent"
+    lastName: "Beck"
+    email: "kent@tdd.com"
+  }) {
+    id
+    fullName
+    email
+  }
+}
+
+# Criar um novo livro
+mutation CreateBook {
+  createBook(input: {
+    title: "Test Driven Development"
+    isbn: "978-0321146533"
+    pageCount: 240
+    authorId: "4"
+  }) {
+    id
+    title
+    isbn
+    pageCount
+    author {
+      fullName
+    }
+  }
+}
+
+# Atualizar um livro existente
+mutation UpdateBook {
+  updateBook(id: "1", input: {
+    title: "Clean Code - Edição Atualizada"
+    isbn: "978-0132350884"
+    pageCount: 500
+    authorId: "1"
+  }) {
+    id
+    title
+    pageCount
+    author {
+      fullName
+    }
+  }
+}
+
+# Deletar um livro
+mutation DeleteBook {
+  deleteBook(id: "2")
+}
+
+# ===== QUERIES COMPLEXAS =====
+
+# Query com múltiplas operações
+query ComplexQuery {
+  # Buscar livros
+  books: allBooks {
+    id
+    title
+    author {
+      fullName
+    }
+  }
+  
+  # Buscar autores
+  authors: allAuthors {
+    id
+    fullName
+    books {
+      title
+    }
+  }
+  
+  # Buscar livro específico
+  cleanCode: bookById(id: "1") {
+    title
+    pageCount
+  }
+}
+
+# Query com fragmentos
+fragment BookInfo on Book {
+  id
+  title
+  isbn
+  pageCount
+}
+
+fragment AuthorInfo on Author {
+  id
+  fullName
+  email
+}
+
+query BooksWithFragments {
+  allBooks {
+    ...BookInfo
+    author {
+      ...AuthorInfo
+    }
+  }
+}

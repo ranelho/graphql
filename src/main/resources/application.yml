@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: graphql-api
+  
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
+    path: /graphql
+    
+server:
+  port: 8080
+  
+logging:
+  level:
+    org.springframework.graphql: DEBUG
+    com.example.graphql: DEBUG

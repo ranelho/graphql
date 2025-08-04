@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphQL Console - API de Livros</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .query-panel {
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .result-panel {
+            padding: 30px;
+            background: white;
+        }
+
+        .panel-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .query-textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            background: white;
+            transition: border-color 0.3s;
+        }
+
+        .query-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .result-area {
+            width: 100%;
+            height: 400px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            background: #f8f9fa;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .examples {
+            margin-top: 20px;
+        }
+
+        .example-btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 13px;
+            transition: background-color 0.3s;
+        }
+
+        .example-btn:hover {
+            background: #dee2e6;
+        }
+
+        .loading {
+            color: #667eea;
+            font-style: italic;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .query-panel {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 GraphQL Console</h1>
+            <p>API de Livros e Autores - Teste suas queries e mutations</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="query-panel">
+                <h3 class="panel-title">📝 Query/Mutation</h3>
+                <textarea id="queryInput" class="query-textarea" placeholder="Digite sua query ou mutation GraphQL aqui...">
+{
+  allBooks {
+    id
+    title
+    author {
+      fullName
+      email
+    }
+  }
+}</textarea>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="executeQuery()">▶️ Executar</button>
+                    <button class="btn btn-secondary" onclick="clearQuery()">🗑️ Limpar</button>
+                    <button class="btn btn-secondary" onclick="formatQuery()">✨ Formatar</button>
+                </div>
+                
+                <div class="examples">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">📚 Exemplos:</h4>
+                    
+                    <button class="example-btn" onclick="loadExample('allBooks')">
+                        📖 Buscar todos os livros
+                    </button>
+                    
+                    <button class="example-btn" onclick="loadExample('allAuthors')">
+                        👥 Buscar todos os autores
+                    </button>
+                    
+                    <button class="example-btn" onclick="loadExample('bookById')">
+                        🔍 Buscar livro por ID
+                    </button>
+                    
+                    <button class="example-btn" onclick="loadExample('createAuthor')">
+                        ➕ Criar novo autor
+                    </button>
+                    
+                    <button class="example-btn" onclick="loadExample('createBook')">
+                        📚 Criar novo livro
+                    </button>
+                </div>
+            </div>
+            
+            <div class="result-panel">
+                <h3 class="panel-title">📊 Resultado</h3>
+                <div id="resultArea" class="result-area">Clique em "Executar" para ver o resultado da sua query...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const examples = {
+            allBooks: `{
+  allBooks {
+    id
+    title
+    isbn
+    pageCount
+    author {
+      id
+      fullName
+      email
+    }
+  }
+}`,
+            allAuthors: `{
+  allAuthors {
+    id
+    firstName
+    lastName
+    fullName
+    email
+    books {
+      id
+      title
+      pageCount
+    }
+  }
+}`,
+            bookById: `{
+  bookById(id: "1") {
+    id
+    title
+    isbn
+    pageCount
+    author {
+      fullName
+      email
+    }
+  }
+}`,
+            createAuthor: `mutation {
+  createAuthor(input: {
+    firstName: "Test"
+    lastName: "Author"
+    email: "test@example.com"
+  }) {
+    id
+    fullName
+    email
+  }
+}`,
+            createBook: `mutation {
+  createBook(input: {
+    title: "Novo Livro"
+    isbn: "978-1234567890"
+    pageCount: 300
+    authorId: "1"
+  }) {
+    id
+    title
+    isbn
+    pageCount
+    author {
+      fullName
+    }
+  }
+}`
+        };
+
+        function loadExample(exampleKey) {
+            document.getElementById('queryInput').value = examples[exampleKey];
+        }
+
+        function clearQuery() {
+            document.getElementById('queryInput').value = '';
+            document.getElementById('resultArea').textContent = 'Query limpa. Digite uma nova query...';
+        }
+
+        function formatQuery() {
+            const query = document.getElementById('queryInput').value;
+            try {
+                // Formatação básica para GraphQL
+                const formatted = query
+                    .replace(/\{/g, '{\n  ')
+                    .replace(/\}/g, '\n}')
+                    .replace(/,/g, ',\n  ')
+                    .replace(/\n\s+\n/g, '\n');
+                document.getElementById('queryInput').value = formatted;
+            } catch (e) {
+                console.log('Formatação não aplicada');
+            }
+        }
+
+        async function executeQuery() {
+            const query = document.getElementById('queryInput').value.trim();
+            const resultArea = document.getElementById('resultArea');
+            
+            if (!query) {
+                resultArea.innerHTML = '<div class="error">❌ Por favor, digite uma query ou mutation.</div>';
+                return;
+            }
+
+            resultArea.innerHTML = '<div class="loading">⏳ Executando query...</div>';
+
+            try {
+                const response = await fetch('/graphql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    if (result.errors) {
+                        resultArea.innerHTML = `<div class="error">❌ Erro na query:\n${JSON.stringify(result.errors, null, 2)}</div>`;
+                    } else {
+                        resultArea.innerHTML = `<div class="success">✅ Sucesso!</div>\n${JSON.stringify(result, null, 2)}`;
+                    }
+                } else {
+                    resultArea.innerHTML = `<div class="error">❌ Erro HTTP ${response.status}:\n${JSON.stringify(result, null, 2)}</div>`;
+                }
+            } catch (error) {
+                resultArea.innerHTML = `<div class="error">❌ Erro de conexão:\n${error.message}</div>`;
+            }
+        }
+
+        // Permitir execução com Ctrl+Enter
+        document.getElementById('queryInput').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                executeQuery();
+            }
+        });
+    </script>
+</body>
+</html>
