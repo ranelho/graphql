@@ -14,7 +14,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class BookService {
-    
+
+    public static final String AUTHOR = "Author";
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
     private final ValidationService validationService;
@@ -34,13 +35,13 @@ public class BookService {
     }
     
     public Author getAuthorById(Long id) {
-        validationService.validateId(id, "Author");
+        validationService.validateId(id, AUTHOR);
         return authorRepository.findById(id)
                 .orElseThrow(() -> new AuthorNotFoundException(id));
     }
     
     public List<Book> getBooksByAuthor(Long authorId) {
-        validationService.validateId(authorId, "Author");
+        validationService.validateId(authorId, AUTHOR);
         // Verifica se o autor existe
         authorRepository.findById(authorId)
                 .orElseThrow(() -> new AuthorNotFoundException(authorId));
@@ -53,7 +54,7 @@ public class BookService {
     
     public Book createBook(String title, String isbn, int pageCount, Long authorId) {
         validationService.validateBook(title, isbn, pageCount);
-        validationService.validateId(authorId, "Author");
+        validationService.validateId(authorId, AUTHOR);
         
         Author author = authorRepository.findById(authorId)
                 .orElseThrow(() -> new AuthorNotFoundException(authorId));
@@ -88,7 +89,7 @@ public class BookService {
         if (pageCount != null) book.setPageCount(pageCount);
         
         if (authorId != null) {
-            validationService.validateId(authorId, "Author");
+            validationService.validateId(authorId, AUTHOR);
             Author author = authorRepository.findById(authorId)
                     .orElseThrow(() -> new AuthorNotFoundException(authorId));
             book.setAuthor(author);
