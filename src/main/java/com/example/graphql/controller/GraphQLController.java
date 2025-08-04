@@ -3,7 +3,6 @@ package com.example.graphql.controller;
 import com.example.graphql.model.Author;
 import com.example.graphql.model.Book;
 import com.example.graphql.service.BookService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -16,8 +15,11 @@ import java.util.Map;
 @Controller
 public class GraphQLController {
     
-    @Autowired
-    private BookService bookService;
+    private final BookService bookService;
+    
+    public GraphQLController(BookService bookService) {
+        this.bookService = bookService;
+    }
     
     // === QUERIES ===
     

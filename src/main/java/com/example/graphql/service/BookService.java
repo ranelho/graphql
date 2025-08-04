@@ -1,29 +1,36 @@
 package com.example.graphql.service;
 
+import com.example.graphql.exception.AuthorNotFoundException;
+import com.example.graphql.exception.BookNotFoundException;
 import com.example.graphql.model.Author;
 import com.example.graphql.model.Book;
 import com.example.graphql.repository.AuthorRepository;
 import com.example.graphql.repository.BookRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
 
 @Service
 public class BookService {
     
-    @Autowired
-    private BookRepository bookRepository;
+    private final BookRepository bookRepository;
+    private final AuthorRepository authorRepository;
+    private final ValidationService validationService;
     
-    @Autowired
-    private AuthorRepository authorRepository;
+    public BookService(BookRepository bookRepository, AuthorRepository authorRepository, ValidationService validationService) {
+        this.bookRepository = bookRepository;
+        this.authorRepository = authorRepository;
+        this.validationService = validationService;
+    }
     
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
     }
     
     public Book getBookById(Long id) {
-        return bookRepository.findById(id).orElse(null);
+        validationService.validateId(id, "Book");
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException(id));
     }
     
     public List<Author> getAllAuthors() {
@@ -31,10 +38,16 @@ public class BookService {
     }
     
     public Author getAuthorById(Long id) {
-        return authorRepository.findById(id).orElse(null);
+        validationService.validateId(id, "Author");
+        return authorRepository.findById(id)
+                .orElseThrow(() -> new AuthorNotFoundException(id));
     }
     
     public List<Book> getBooksByAuthor(Long authorId) {
+        validationService.validateId(authorId, "Author");
+        // Verifica se o autor existe
+        authorRepository.findById(authorId)
+                .orElseThrow(() -> new AuthorNotFoundException(authorId));
         return bookRepository.findByAuthorId(authorId);
     }
     
@@ -43,41 +56,59 @@ public class BookService {
     }
     
     public Book createBook(String title, String isbn, int pageCount, Long authorId) {
-        Author author = authorRepository.findById(authorId).orElse(null);
-        if (author == null) {
-            throw new RuntimeException("Author not found with id: " + authorId);
-        }
+        validationService.validateBook(title, isbn, pageCount);
+        validationService.validateId(authorId, "Author");
+        
+        Author author = authorRepository.findById(authorId)
+                .orElseThrow(() -> new AuthorNotFoundException(authorId));
+        
         Book book = new Book(title, isbn, pageCount, author);
         return bookRepository.save(book);
     }
     
     public Author createAuthor(String firstName, String lastName, String email) {
+        validationService.validateAuthor(firstName, lastName, email);
+        
         Author author = new Author(firstName, lastName, email);
         return authorRepository.save(author);
     }
     
     public Book updateBook(Long id, String title, String isbn, Integer pageCount, Long authorId) {
-        Book book = bookRepository.findById(id).orElse(null);
-        if (book != null) {
-            if (title != null) book.setTitle(title);
-            if (isbn != null) book.setIsbn(isbn);
-            if (pageCount != null) book.setPageCount(pageCount);
-            if (authorId != null) {
-                Author author = authorRepository.findById(authorId).orElse(null);
-                if (author != null) {
-                    book.setAuthor(author);
-                }
-            }
-            return bookRepository.save(book);
+        validationService.validateId(id, "Book");
+        
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException(id));
+        
+        // Valida apenas os campos que serão atualizados
+        if (title != null || isbn != null || pageCount != null) {
+            String currentTitle = title != null ? title : book.getTitle();
+            String currentIsbn = isbn != null ? isbn : book.getIsbn();
+            Integer currentPageCount = pageCount != null ? pageCount : book.getPageCount();
+            validationService.validateBook(currentTitle, currentIsbn, currentPageCount);
         }
-        return null;
+        
+        if (title != null) book.setTitle(title);
+        if (isbn != null) book.setIsbn(isbn);
+        if (pageCount != null) book.setPageCount(pageCount);
+        
+        if (authorId != null) {
+            validationService.validateId(authorId, "Author");
+            Author author = authorRepository.findById(authorId)
+                    .orElseThrow(() -> new AuthorNotFoundException(authorId));
+            book.setAuthor(author);
+        }
+        
+        return bookRepository.save(book);
     }
     
     public boolean deleteBook(Long id) {
-        if (bookRepository.existsById(id)) {
-            bookRepository.deleteById(id);
-            return true;
+        validationService.validateId(id, "Book");
+        
+        if (!bookRepository.existsById(id)) {
+            throw new BookNotFoundException(id);
         }
-        return false;
+        
+        bookRepository.deleteById(id);
+        return true;
     }
 }
