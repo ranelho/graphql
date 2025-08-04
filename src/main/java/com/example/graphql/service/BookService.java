@@ -6,22 +6,18 @@ import com.example.graphql.model.Author;
 import com.example.graphql.model.Book;
 import com.example.graphql.repository.AuthorRepository;
 import com.example.graphql.repository.BookRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class BookService {
     
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
     private final ValidationService validationService;
-    
-    public BookService(BookRepository bookRepository, AuthorRepository authorRepository, ValidationService validationService) {
-        this.bookRepository = bookRepository;
-        this.authorRepository = authorRepository;
-        this.validationService = validationService;
-    }
     
     public List<Book> getAllBooks() {
         return bookRepository.findAll();

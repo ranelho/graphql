@@ -3,6 +3,7 @@ package com.example.graphql.controller;
 import com.example.graphql.model.Author;
 import com.example.graphql.model.Book;
 import com.example.graphql.service.BookService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -13,13 +14,10 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
+@RequiredArgsConstructor
 public class GraphQLController {
     
     private final BookService bookService;
-    
-    public GraphQLController(BookService bookService) {
-        this.bookService = bookService;
-    }
     
     // === QUERIES ===
     
