@@ -14,7 +14,7 @@ public class ValidationService {
     );
     
     private static final Pattern ISBN_PATTERN = Pattern.compile(
-        "^(?:ISBN[- ]?)?(?:97[89][- ]?)?[\\d][- ]?[\\d][- ]?[\\d][- ]?[\\d][- ]?[\\d][- ]?[\\d][- ]?[\\d][- ]?[\\d][- ]?[\\d][- ]?[\\dX]$"
+        "^(?:ISBN[- ]?)?(?:97[89][- ]?)?\\d{9}[\\dX]$"
     );
     
     public void validateAuthor(String firstName, String lastName, String email) {
